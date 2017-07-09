@@ -1,16 +1,11 @@
 {
-  "name": "cinnakaban",
+  "name": "cinnakanban",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "antd": "^2.12.0",
-    "gun": "^0.8.0",
     "react": "^15.6.1",
-    "react-dnd": "^2.4.0",
     "react-dom": "^15.6.1",
-    "react-redux": "^5.0.5",
-    "react-scripts": "1.0.10",
-    "redux": "^3.7.1"
+    "react-scripts": "1.0.10"
   },
   "scripts": {
     "start": "react-scripts start",

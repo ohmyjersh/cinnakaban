@@ -1,16 +1,30 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
+import React from 'react';
+import { connect } from 'react-redux'
+import { bindActionCreators } from 'redux'
 import './App.css';
 import LanesDashboard from '../components/lanesDashboard';
+import {actionCreators as actions} from '../state';
 
-class App extends Component {
-  render() {
+const App = ({dashboard, actions}) => {
     return (
       <div className="App">
-        <LanesDashboard />
+        <LanesDashboard dashboard={dashboard} actions={actions} />
       </div>
     );
-  }
 }
 
-export default App;
+
+const mapStateToProps = (state) => state;
+
+const mapDispatchToProps = (dispatch) => {
+  return { actions: bindActionCreators(actions, dispatch) }
+}
+
+
+
+const AppContainer = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(App)
+
+export default AppContainer

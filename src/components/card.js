@@ -27,9 +27,9 @@ const cardSource  = {
 	endDrag(props, monitor) {
 		const item = monitor.getItem();
 		const dropResult = monitor.getDropResult();	
-
+		
 		if ( dropResult && dropResult.listId !== item.listId ) {
-			props.removeCard(item.index);
+			//props.removeCard(item.index);
 		}
 	}
 };

@@ -8,30 +8,27 @@ const Lane = (props) => {
     const { size, title, cards, actions, connectDropTarget, isOver, canDrop, children } = props;
     return connectDropTarget(<div>
         <Col span={size}>
-            <Card />
+            {
+                cards.map((x, index) => <Card index={index} card={x}/>)
+            }
         </Col>
     </div>)
 }
 
 const laneTarget = {
-    canDrop(props) {
-        //console.log('can drop', props);
-        // check if current lane
-        //return canMoveKnight(props.x, props.y);
-    },
-
-    drop(props) {
-        //console.log('dropping', props);
-        // fire action to push to new lane
-        //moveKnight(props.x, props.y);
-    },
-};
-
-function collect(connect, monitor) {
-    return {
-        connectDropTarget: connect.dropTarget(),
-        isOver: monitor.isOver(),
-        canDrop: monitor.canDrop(),
-    };
+	drop(props, monitor, component ) {
+        console.log(props);
+		const { id } = props;
+		const sourceObj = monitor.getItem();		
+		if ( id !== sourceObj.listId ) //component.pushCard(sourceObj.card);
+		return {
+			listId: id
+		};
+	}
 }
-export default DropTarget(ItemTypes.CARD, laneTarget, collect)(Lane);
+
+export default DropTarget(ItemTypes.CARD, laneTarget, (connect, monitor) => ({
+	connectDropTarget: connect.dropTarget(),
+	isOver: monitor.isOver(),
+	canDrop: monitor.canDrop()
+}))(Lane);

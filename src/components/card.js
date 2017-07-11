@@ -1,39 +1,97 @@
 import React from 'react';
-import { DragSource } from 'react-dnd';
+import ReactDOM from 'react-dom';
+import {compose} from 'redux';
+import { DragSource, DropTarget } from 'react-dnd';
 import {Card} from 'antd';
 import ItemTypes from '../constants/itemTypes';
 
 const KanbanCard = (props) => {
-    const { connectDragSource, isDragging } = props;
-    return connectDragSource(<div>
+    const { card, isDragging, connectDragSource, connectDropTarget } = props;
+    return connectDragSource(connectDropTarget(<div>
         <Card style={{opacity: isDragging ? 0.5 : 1}} >
-            this is a card
+            <h1>{card.title}</h1>
+            <h2>{card.descritpion}</h2>
         </Card>
-    </div>)
+    </div>));
 }
-
 
 const cardSource  = {
-  beginDrag(props) {
-    console.log(props);
-    return {};
-  },
-  isDragging(props, monitor) {
-    const item = monitor.getItem();
-    //const dropResult = monitor.getDropResult();
+	beginDrag(props) {
+		return {			
+			index: props.index,
+			laneId: props.laneId,
+			card: props.card
+		};
+	},
 
-    console.log('item', item);
-    //console.log('dropresult', dropResult);
-    //return props.id === monitor.getItem().id
-  }
+	endDrag(props, monitor) {
+		const item = monitor.getItem();
+		const dropResult = monitor.getDropResult();	
+
+		if ( dropResult && dropResult.listId !== item.listId ) {
+			props.removeCard(item.index);
+		}
+	}
 };
 
-function collect(connect, monitor) {
-  return {
-    connectDragSource: connect.dragSource(),
-    connectDragPreview: connect.dragPreview(),
-    isDragging: monitor.isDragging(),
-  };
-}
 
-export default DragSource(ItemTypes.CARD, cardSource, collect)(KanbanCard);
+const cardTarget = {
+
+	hover(props, monitor, component) {
+		const dragIndex = monitor.getItem().index;
+		const hoverIndex = props.index;
+		const sourceListId = monitor.getItem().listId;	
+
+		// Don't replace items with themselves
+		if (dragIndex === hoverIndex) {
+			return;
+		}
+
+		// Determine rectangle on screen
+		const hoverBoundingRect = ReactDOM.findDOMNode(component).getBoundingClientRect();
+
+		// Get vertical middle
+		const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+
+		// Determine mouse position
+		const clientOffset = monitor.getClientOffset();
+
+		// Get pixels to the top
+		const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+
+		// Only perform the move when the mouse has crossed half of the items height
+		// When dragging downwards, only move when the cursor is below 50%
+		// When dragging upwards, only move when the cursor is above 50%
+
+		// Dragging downwards
+		if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+			return;
+		}
+
+		// Dragging upwards
+		if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+			return;
+		}
+
+		// Time to actually perform the action
+		if ( props.listId === sourceListId ) {
+			props.moveCard(dragIndex, hoverIndex);
+
+			// Note: we're mutating the monitor item here!
+			// Generally it's better to avoid mutations,
+			// but it's good here for the sake of performance
+			// to avoid expensive index searches.
+			monitor.getItem().index = hoverIndex;
+		}		
+	}
+};
+
+export default compose(
+  DragSource(ItemTypes.CARD, cardSource, (connect, monitor) => ({
+    connectDragSource: connect.dragSource(),
+    isDragging: monitor.isDragging()
+  })),
+  DropTarget(ItemTypes.CARD, cardTarget, (connect) => ({
+    connectDropTarget: connect.dropTarget()
+  }))
+)(KanbanCard);

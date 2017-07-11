@@ -4,10 +4,11 @@ import { DragDropContext } from 'react-dnd';
 import {Row} from 'antd';
 import Lane from './lane'
 
-const Lanes = ({lanes, actions}) => {
+const Lanes = ({lanes, cards, actions}) => {
     return (
         <Row>
-           { lanes.map((x, index) => <Lane key={index} size={8} />) }
+           { 
+               lanes.map((x, index) => <Lane key={index} index={index} {...lanes[index]} cards={cards.filter(c => c.laneId === x.id)} size={8} />) }
     </Row> )
 }
 
